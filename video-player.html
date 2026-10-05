@@ -36,15 +36,8 @@
       border-bottom: 1px solid rgba(255,255,255,0.08);
       flex-wrap: wrap;
     }
-    h1 {
-      margin: 0;
-      font-size: clamp(1.5rem, 4vw, 2.6rem);
-    }
-    .nav {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+    h1 { margin: 0; font-size: clamp(1.5rem, 4vw, 2.6rem); }
+    .nav { display: flex; gap: 10px; flex-wrap: wrap; }
     .nav a {
       color: #fff;
       text-decoration: none;
@@ -53,9 +46,7 @@
       padding: 8px 12px;
       background: rgba(255,255,255,0.02);
     }
-    .content {
-      padding: 20px;
-    }
+    .content { padding: 20px; }
     .video-wrap {
       position: relative;
       background: #000;
@@ -83,10 +74,7 @@
       font-weight: 700;
       cursor: pointer;
     }
-    #playBtn {
-      background: #47ff9f;
-      color: #04170d;
-    }
+    #playBtn { background: #47ff9f; color: #04170d; }
     #reloadBtn {
       background: rgba(255,255,255,0.08);
       color: #fff;
@@ -142,6 +130,7 @@
     reloadBtn.addEventListener('click', () => {
       video.pause();
       video.currentTime = 0;
+      video.src = './video.mp4';
       video.load();
       status.textContent = 'Video reloaded.';
     });
@@ -150,9 +139,7 @@
       status.textContent = 'Video ready.';
     });
 
-    video.addEventListener('ended', () => {
-      status.textContent = 'Playback finished.';
-    });
+    video.addEventListener('ended', () => { status.textContent = 'Playback finished.'; });
   </script>
 </body>
 </html>

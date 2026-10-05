@@ -177,7 +177,7 @@
 
     <div id="video-panel" class="video-panel">
       <div class="video-card">
-        <video id="video" controls playsinline webkit-playsinline></video>
+        <video id="video" controls playsinline webkit-playsinline preload="auto"></video>
         <div class="controls">
           <button id="playBtn">▶ Play</button>
           <button id="closeBtn">✕ Close</button>
@@ -198,6 +198,7 @@
 
     let lastCode = null;
     let scanning = true;
+    const videoSource = './video.mp4';
 
     function showMessage(text, timeout = 3000) {
       message.textContent = text;
@@ -229,17 +230,11 @@
     }
 
     function parseVideoUrl(raw) {
-      let url = raw.trim();
-      if (!url) return null;
-      if (url.includes('video=')) {
-        return decodeURIComponent(url.split('video=')[1].split('&')[0]);
-      }
-      if (url.includes('.mp4') || url.includes('.webm') || url.includes('.mov')) {
-        return url;
-      }
-      if (url.includes('github.com')) {
-        return './video.mp4';
-      }
+      const value = String(raw || '').trim();
+      if (!value) return null;
+      if (value.includes('video=')) return decodeURIComponent(value.split('video=')[1].split('&')[0]);
+      if (/(?:\.mp4|\.webm|\.mov)(?:\?|$)/i.test(value)) return value;
+      if (value.includes('github.com') || value.includes('raw.githubusercontent')) return videoSource;
       return null;
     }
 
@@ -249,7 +244,6 @@
         showMessage('The QR code was read, but it does not contain a valid video link.', 4000);
         return;
       }
-
       scanning = false;
       videoPanel.classList.add('active');
       playback.src = url;
@@ -262,25 +256,18 @@
         requestAnimationFrame(scanLoop);
         return;
       }
-
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(imageData.data, imageData.width, imageData.height);
-
       if (code && code.data && code.data !== lastCode) {
         lastCode = code.data;
         handleCode(code.data);
       }
-
       requestAnimationFrame(scanLoop);
     }
 
     playBtn.addEventListener('click', async () => {
-      try {
-        await playback.play();
-      } catch (e) {
-        showMessage('Tap the video player to begin playback.', 2500);
-      }
+      try { await playback.play(); } catch (e) { showMessage('Tap the video player to begin playback.', 2500); }
     });
 
     closeBtn.addEventListener('click', () => {

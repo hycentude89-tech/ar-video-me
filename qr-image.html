@@ -38,10 +38,7 @@
       gap: 14px;
       flex-wrap: wrap;
     }
-    h1 {
-      margin: 0;
-      font-size: clamp(1.6rem, 4vw, 2.2rem);
-    }
+    h1 { margin: 0; font-size: clamp(1.6rem, 4vw, 2.2rem); }
     .nav {
       display: flex;
       gap: 12px;
@@ -108,9 +105,7 @@
       margin-top: 16px;
       display: none;
     }
-    .video-box.active {
-      display: block;
-    }
+    .video-box.active { display: block; }
     video {
       width: 100%;
       background: #000;
@@ -128,11 +123,7 @@
       color: #04170d !important;
       border-color: transparent !important;
     }
-    @media (max-width: 700px) {
-      .content {
-        grid-template-columns: 1fr;
-      }
-    }
+    @media (max-width: 700px) { .content { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -174,19 +165,14 @@
     const video = document.getElementById('video');
     const playBtn = document.getElementById('playBtn');
     const openScannerBtn = document.getElementById('openScannerBtn');
+    const videoSource = './video.mp4';
 
     function parseVideoUrl(raw) {
       const text = String(raw || '').trim();
       if (!text) return null;
-      if (text.includes('video=')) {
-        return decodeURIComponent(text.split('video=')[1].split('&')[0]);
-      }
-      if (/(?:\.mp4|\.webm|\.mov)(?:\?|$)/i.test(text)) {
-        return text;
-      }
-      if (text.includes('github.com') || text.includes('raw.githubusercontent')) {
-        return './video.mp4';
-      }
+      if (text.includes('video=')) return decodeURIComponent(text.split('video=')[1].split('&')[0]);
+      if (/(?:\.mp4|\.webm|\.mov)(?:\?|$)/i.test(text)) return text;
+      if (text.includes('github.com') || text.includes('raw.githubusercontent')) return videoSource;
       return null;
     }
 
@@ -194,7 +180,6 @@
       const url = parseVideoUrl(data);
       value.textContent = data;
       status.textContent = url ? 'QR code decoded successfully.' : 'QR code decoded, but no usable video link was found.';
-
       if (url) {
         video.src = url;
         videoBox.classList.add('active');
@@ -211,7 +196,6 @@
         canvas.width = img.width;
         canvas.height = img.height;
         ctx.drawImage(img, 0, 0);
-
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height);
 
@@ -232,17 +216,10 @@
     }
 
     playBtn.addEventListener('click', async () => {
-      try {
-        await video.play();
-      } catch (e) {
-        status.textContent = 'Tap the video controls to start playback.';
-      }
+      try { await video.play(); } catch (e) { status.textContent = 'Tap the video controls to start playback.'; }
     });
 
-    openScannerBtn.addEventListener('click', () => {
-      window.location.href = 'qr-scanner.html';
-    });
-
+    openScannerBtn.addEventListener('click', () => { window.location.href = 'qr-scanner.html'; });
     decodeImage();
   </script>
 </body>

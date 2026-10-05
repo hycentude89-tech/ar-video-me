@@ -16,9 +16,7 @@
       font-family: Arial, Helvetica, sans-serif;
       overflow: hidden;
     }
-    body {
-      background: radial-gradient(circle at top, #123027, #030d0a 45%, #000 100%);
-    }
+    body { background: radial-gradient(circle at top, #123027, #030d0a 45%, #000 100%); }
     #app {
       position: relative;
       width: 100%;
@@ -132,7 +130,6 @@
 <body>
   <div id="app">
     <video id="camera" playsinline autoplay muted></video>
-
     <div class="header">AR Video Scanner</div>
     <div class="scan-box">
       <div class="corner tl"></div>
@@ -162,11 +159,11 @@
     const message = document.getElementById('message');
     const playBtn = document.getElementById('playBtn');
     const closeBtn = document.getElementById('closeBtn');
-
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     let lastCode = null;
     let scanning = true;
+    const videoSource = './video.mp4';
 
     function showMessage(text, timeout = 3200) {
       message.textContent = text;
@@ -177,11 +174,9 @@
     function parseVideoUrl(raw) {
       const text = String(raw || '').trim();
       if (!text) return null;
-      if (text.includes('video=')) {
-        return decodeURIComponent(text.split('video=')[1].split('&')[0]);
-      }
+      if (text.includes('video=')) return decodeURIComponent(text.split('video=')[1].split('&')[0]);
       if (/(?:\.mp4|\.webm|\.mov)(?:\?|$)/i.test(text)) return text;
-      if (text.includes('github.com') || text.includes('raw.githubusercontent')) return './video.mp4';
+      if (text.includes('github.com') || text.includes('raw.githubusercontent')) return videoSource;
       return null;
     }
 
@@ -208,7 +203,6 @@
         showMessage('The QR code was detected, but it does not point to a valid video.', 4000);
         return;
       }
-
       scanning = false;
       videoSheet.classList.add('active');
       video.src = url;
@@ -221,25 +215,18 @@
         requestAnimationFrame(scanLoop);
         return;
       }
-
       ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(imageData.data, imageData.width, imageData.height);
-
       if (code && code.data && code.data !== lastCode) {
         lastCode = code.data;
         handleQR(code.data);
       }
-
       requestAnimationFrame(scanLoop);
     }
 
     playBtn.addEventListener('click', async () => {
-      try {
-        await video.play();
-      } catch (err) {
-        showMessage('Tap the video controls to start playback.', 2200);
-      }
+      try { await video.play(); } catch (err) { showMessage('Tap the video controls to start playback.', 2200); }
     });
 
     closeBtn.addEventListener('click', () => {
