@@ -2,42 +2,100 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AR Video</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Ronaldo Video</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#000;font-family:Arial,sans-serif;color:#fff}
-body{display:flex;align-items:center;justify-content:center;padding:18px}
-main{width:min(900px,100%);text-align:center}
-h1{font-size:clamp(24px,6vw,42px);margin:0 0 8px}
-p{opacity:.85;margin:0 0 18px}
-video{width:100%;max-height:75vh;border-radius:14px;background:#111;display:block}
-button{margin-top:16px;padding:13px 22px;border:0;border-radius:999px;font-size:16px;font-weight:bold;cursor:pointer}
-#status{margin-top:12px;font-size:14px;opacity:.8}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;background:#000;color:#fff;font-family:Arial,sans-serif}
+body{display:flex;align-items:center;justify-content:center;padding:14px}
+.wrap{width:min(900px,100%);text-align:center}
+h1{margin:4px 0 8px;font-size:clamp(24px,7vw,42px)}
+p{margin:0 0 14px;opacity:.8}
+.player{position:relative;width:100%;background:#111;border-radius:14px;overflow:hidden}
+video{display:block;width:100%;height:auto;max-height:75vh;background:#111}
+#message{padding:16px;font-size:15px}
+button{margin:14px 6px 0;padding:13px 22px;border:0;border-radius:999px;font-size:16px;font-weight:700;cursor:pointer}
+#retry{display:none}
+.small{margin-top:12px;font-size:12px;opacity:.65}
 </style>
 </head>
 <body>
-<main>
-<h1>Ronaldo Video</h1>
-<p>Tap play if your browser blocks automatic playback.</p>
-<video id="video" controls playsinline webkit-playsinline preload="metadata" muted>
-<source src="https://raw.githubusercontent.com/hycentude89-tech/ar-video-/refs/heads/main/c3f3ac01c4dc092612c9b62d5c65b899.mp4" type="video/mp4">
-Your browser does not support video.
-</video>
-<button id="play">▶ Play Video</button>
-<div id="status">Loading video…</div>
-</main>
+<div class="wrap">
+  <h1>Ronaldo Video</h1>
+  <p>Tap Play to start the video.</p>
+
+  <div class="player">
+    <video id="video"
+      controls
+      playsinline
+      webkit-playsinline
+      preload="auto"
+      controlslist="nodownload">
+      <source src="https://raw.githubusercontent.com/hycentude89-tech/ar-video-/refs/heads/main/c3f3ac01c4dc092612c9b62d5c65b899.mp4" type="video/mp4">
+    </video>
+    <div id="message">Loading video…</div>
+  </div>
+
+  <button id="play">▶ Play Video</button>
+  <button id="retry">↻ Reload Video</button>
+  <div class="small">If playback stops, tap Reload Video and then Play.</div>
+</div>
+
 <script>
-const v=document.getElementById('video');
-const b=document.getElementById('play');
-const s=document.getElementById('status');
-async function playVideo(){
-  try{v.muted=true; await v.play(); s.textContent='Playing';}
-  catch(e){s.textContent='Tap Play to start the video';}
-}
-b.addEventListener('click',playVideo);
-v.addEventListener('loadeddata',()=>{s.textContent='Ready'; playVideo();});
-v.addEventListener('play',()=>s.textContent='Playing');
-v.addEventListener('pause',()=>s.textContent='Paused');
+const video = document.getElementById('video');
+const message = document.getElementById('message');
+const play = document.getElementById('play');
+const retry = document.getElementById('retry');
+
+function setMessage(t){ message.textContent=t; }
+
+play.addEventListener('click', async () => {
+  try {
+    await video.play();
+    setMessage('Playing…');
+  } catch(e) {
+    setMessage('Tap the video play button to start.');
+  }
+});
+
+retry.addEventListener('click', () => {
+  retry.style.display='none';
+  setMessage('Reloading video…');
+  video.pause();
+  video.currentTime=0;
+  video.load();
+});
+
+video.addEventListener('loadedmetadata', () => {
+  setMessage('Ready — tap Play.');
+});
+
+video.addEventListener('canplay', () => {
+  setMessage('Ready — tap Play.');
+});
+
+video.addEventListener('playing', () => {
+  setMessage('Playing…');
+});
+
+video.addEventListener('waiting', () => {
+  setMessage('Buffering… please wait.');
+});
+
+video.addEventListener('stalled', () => {
+  setMessage('Video connection stalled. Tap Reload Video.');
+  retry.style.display='inline-block';
+});
+
+video.addEventListener('error', () => {
+  setMessage('The video could not be loaded. Tap Reload Video.');
+  retry.style.display='inline-block';
+});
+
+window.addEventListener('load', () => {
+  video.load();
+});
 </script>
 </body>
 </html>
