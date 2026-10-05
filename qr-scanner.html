@@ -3,427 +3,296 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>QR Code Video Scanner</title>
+  <title>QR Scanner</title>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; }
     html, body {
+      margin: 0;
       width: 100%;
       height: 100%;
       background: #000;
       color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
     }
-
     body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #050d0c, #0f261f 40%, #040805);
+    }
+    #camera-box {
+      position: relative;
+      width: 100%;
+      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
     }
-
-    #scanner-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
     #camera-feed {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
+      background: #000;
     }
-
-    #canvas {
-      display: none;
-    }
-
+    #canvas { display: none; }
     .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 10;
+      position: absolute;
+      inset: 0;
       pointer-events: none;
+      z-index: 2;
     }
-
-    .qr-frame {
-      position: fixed;
-      top: 50%;
+    .scan-frame {
+      position: absolute;
       left: 50%;
-      width: 250px;
-      height: 250px;
-      border: 3px solid #00ff00;
-      border-radius: 8px;
+      top: 50%;
+      width: min(72vw, 290px);
+      height: min(72vw, 290px);
       transform: translate(-50%, -50%);
-      box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.3);
-      z-index: 11;
-      animation: pulse 2s infinite;
+      border: 3px solid #47ff9f;
+      background: rgba(71,255,159,0.06);
+      box-shadow: 0 0 20px rgba(71,255,159,0.28);
+      border-radius: 10px;
     }
-
-    @keyframes pulse {
-      0%, 100% { box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.3), 0 0 20px rgba(0, 255, 0, 0.2); }
-      50% { box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.5), 0 0 30px rgba(0, 255, 0, 0.3); }
-    }
-
     .corner {
       position: absolute;
-      width: 20px;
-      height: 20px;
-      border: 2px solid #00ff00;
+      width: 28px;
+      height: 28px;
+      border-color: #47ff9f;
+      border-style: solid;
     }
-
-    .corner.top-left { top: -3px; left: -3px; border-right: none; border-bottom: none; }
-    .corner.top-right { top: -3px; right: -3px; border-left: none; border-bottom: none; }
-    .corner.bottom-left { bottom: -3px; left: -3px; border-right: none; border-top: none; }
-    .corner.bottom-right { bottom: -3px; right: -3px; border-left: none; border-top: none; }
-
-    .hint-text {
-      position: fixed;
-      bottom: 40px;
+    .corner.tl { top: -3px; left: -3px; border-width: 4px 0 0 4px; border-radius: 8px 0 0 0; }
+    .corner.tr { top: -3px; right: -3px; border-width: 4px 4px 0 0; border-radius: 0 8px 0 0; }
+    .corner.bl { bottom: -3px; left: -3px; border-width: 0 0 4px 4px; border-radius: 0 0 0 8px; }
+    .corner.br { bottom: -3px; right: -3px; border-width: 0 4px 4px 0; border-radius: 0 0 8px 0; }
+    .header {
+      position: absolute;
+      top: 18px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.8);
-      padding: 14px 24px;
-      border-radius: 12px;
+      background: rgba(0,0,0,0.62);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(71,255,159,0.3);
+      font-size: 15px;
+      z-index: 3;
       text-align: center;
-      z-index: 12;
+      white-space: nowrap;
+    }
+    .footer {
+      position: absolute;
+      left: 50%;
+      bottom: 26px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      color: #dfffe8;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(71,255,159,0.25);
       font-size: 14px;
-      border: 1px solid rgba(0, 255, 0, 0.3);
-    }
-
-    .top-info {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      right: 20px;
-      z-index: 12;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 16px;
-      border-radius: 12px;
       text-align: center;
-      border: 1px solid rgba(0, 255, 0, 0.3);
+      z-index: 3;
+      max-width: 90%;
     }
-
-    .top-info h2 {
-      font-size: 20px;
-      margin-bottom: 8px;
-    }
-
-    .top-info p {
-      font-size: 12px;
-      opacity: 0.8;
-    }
-
-    #video-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+    .video-panel {
+      position: absolute;
+      inset: 0;
       display: none;
-      flex-direction: column;
+      background: rgba(0,0,0,0.96);
+      z-index: 10;
       align-items: center;
       justify-content: center;
-      background: #000;
-      z-index: 100;
+      padding: 24px;
     }
-
-    #video-container.active {
-      display: flex;
-    }
-
-    .video-player {
-      width: 90%;
-      max-width: 800px;
-      background: #111;
-      border-radius: 12px;
+    .video-panel.active { display: flex; }
+    .video-card {
+      width: min(900px, 100%);
+      background: #0b120d;
+      border-radius: 18px;
+      border: 1px solid rgba(71,255,159,0.3);
       overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0, 255, 0, 0.1);
     }
-
-    .video-player video {
-      width: 100%;
-      height: auto;
+    video {
       display: block;
-      max-height: 80vh;
+      width: 100%;
+      max-height: 70vh;
+      background: #000;
     }
-
-    .video-controls {
-      padding: 16px;
-      background: #0a0a0a;
+    .controls {
       display: flex;
-      gap: 12px;
-      justify-content: center;
       flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+      background: rgba(255,255,255,0.02);
     }
-
     button {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
+      appearance: none;
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
-
-    #play-btn {
-      background: #00ff00;
-      color: #000;
-    }
-
-    #play-btn:hover {
-      background: #00cc00;
-      transform: scale(1.05);
-    }
-
-    #close-btn {
-      background: #ff4444;
-      color: #fff;
-    }
-
-    #close-btn:hover {
-      background: #cc0000;
-      transform: scale(1.05);
-    }
-
-    #error-msg {
-      position: fixed;
+    #playBtn { background: #47ff9f; color: #02170d; }
+    #closeBtn { background: #ff6464; color: white; }
+    .message {
+      position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(255, 68, 68, 0.9);
-      color: #fff;
-      padding: 24px;
+      background: rgba(255, 100, 100, 0.96);
+      color: white;
+      padding: 18px 24px;
       border-radius: 12px;
-      text-align: center;
-      z-index: 13;
       display: none;
       max-width: 90%;
-    }
-
-    .camera-permission {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: #000;
+      z-index: 20;
       text-align: center;
-      padding: 24px;
     }
-
-    .camera-permission h1 {
-      font-size: 28px;
-      margin-bottom: 16px;
-    }
-
-    .camera-permission p {
-      font-size: 14px;
-      opacity: 0.8;
-      margin-bottom: 24px;
-      line-height: 1.6;
-    }
-
-    .camera-permission button {
-      background: #00ff00;
-      color: #000;
-      padding: 14px 32px;
-      font-size: 16px;
-    }
+    .message.show { display: block; }
   </style>
 </head>
 <body>
-  <div id="scanner-container">
-    <video id="camera-feed" playsinline autoplay></video>
+  <div id="camera-box">
+    <video id="camera-feed" playsinline autoplay muted></video>
     <canvas id="canvas"></canvas>
-    
+
+    <div class="header">QR Scanner</div>
     <div class="overlay">
-      <div class="qr-frame">
-        <div class="corner top-left"></div>
-        <div class="corner top-right"></div>
-        <div class="corner bottom-left"></div>
-        <div class="corner bottom-right"></div>
+      <div class="scan-frame">
+        <div class="corner tl"></div>
+        <div class="corner tr"></div>
+        <div class="corner bl"></div>
+        <div class="corner br"></div>
       </div>
     </div>
+    <div class="footer">Point the camera at the QR code to open the video.</div>
 
-    <div class="top-info">
-      <h2>QR Scanner</h2>
-      <p>Position the QR code within the frame</p>
-    </div>
+    <div id="message" class="message">Camera access required.</div>
 
-    <div class="hint-text">
-      📷 Point camera at QR code to scan
-    </div>
-  </div>
-
-  <div id="video-container">
-    <div class="video-player">
-      <video id="scanned-video" controls playsinline webkit-playsinline preload="auto"></video>
-      <div class="video-controls">
-        <button id="play-btn">▶ Play</button>
-        <button id="close-btn">✕ Back to Scanner</button>
+    <div id="video-panel" class="video-panel">
+      <div class="video-card">
+        <video id="video" controls playsinline webkit-playsinline></video>
+        <div class="controls">
+          <button id="playBtn">▶ Play</button>
+          <button id="closeBtn">✕ Close</button>
+        </div>
       </div>
     </div>
   </div>
-
-  <div id="error-msg"></div>
 
   <script>
     const video = document.getElementById('camera-feed');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    const videoContainer = document.getElementById('video-container');
-    const scannedVideo = document.getElementById('scanned-video');
-    const playBtn = document.getElementById('play-btn');
-    const closeBtn = document.getElementById('close-btn');
-    const errorMsg = document.getElementById('error-msg');
-    const hintText = document.querySelector('.hint-text');
+    const message = document.getElementById('message');
+    const videoPanel = document.getElementById('video-panel');
+    const playback = document.getElementById('video');
+    const playBtn = document.getElementById('playBtn');
+    const closeBtn = document.getElementById('closeBtn');
 
-    let isScanning = true;
-    let lastScannedCode = null;
-    let isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    let lastCode = null;
+    let scanning = true;
 
-    // Set canvas size
-    function setCanvasSize() {
-      canvas.width = video.videoWidth || window.innerWidth;
-      canvas.height = video.videoHeight || window.innerHeight;
+    function showMessage(text, timeout = 3000) {
+      message.textContent = text;
+      message.classList.add('show');
+      if (timeout) {
+        setTimeout(() => message.classList.remove('show'), timeout);
+      }
     }
 
-    // Request camera permission
+    function setCanvasForVideo() {
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+    }
+
     async function startCamera() {
       try {
-        const constraints = {
-          video: {
-            facingMode: isMobile ? 'environment' : 'user',
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
-          },
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
           audio: false
-        };
-
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        });
         video.srcObject = stream;
-
-        video.addEventListener('loadedmetadata', () => {
-          setCanvasSize();
-          scanQRCode();
-        });
-      } catch (err) {
-        showError('Camera access denied. Please enable camera permission to scan QR codes.');
-        console.error('Camera error:', err);
+        video.onloadedmetadata = () => {
+          setCanvasForVideo();
+          scanLoop();
+        };
+      } catch (e) {
+        showMessage('Camera access is blocked. Please allow camera access and reload the page.', 5000);
       }
     }
 
-    // Scan QR code
-    function scanQRCode() {
-      if (!isScanning) return;
+    function parseVideoUrl(raw) {
+      let url = raw.trim();
+      if (!url) return null;
+      if (url.includes('video=')) {
+        return decodeURIComponent(url.split('video=')[1].split('&')[0]);
+      }
+      if (url.includes('.mp4') || url.includes('.webm') || url.includes('.mov')) {
+        return url;
+      }
+      if (url.includes('github.com')) {
+        return './video.mp4';
+      }
+      return null;
+    }
 
-      if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-        if (code && code.data !== lastScannedCode) {
-          lastScannedCode = code.data;
-          handleQRCode(code.data);
-        }
+    function handleCode(data) {
+      const url = parseVideoUrl(data);
+      if (!url) {
+        showMessage('The QR code was read, but it does not contain a valid video link.', 4000);
+        return;
       }
 
-      requestAnimationFrame(scanQRCode);
+      scanning = false;
+      videoPanel.classList.add('active');
+      playback.src = url;
+      playback.load();
+      showMessage('QR code found. Video ready.', 1800);
     }
 
-    // Handle scanned QR code
-    function handleQRCode(qrData) {
-      console.log('QR Code detected:', qrData);
-      
-      // Check if QR code contains a video URL or a command
-      if (qrData.includes('video=') || qrData.includes('.mp4') || qrData.includes('.webm') || qrData.includes('.mov')) {
-        // Extract video URL
-        let videoUrl = qrData;
-        if (qrData.includes('video=')) {
-          videoUrl = qrData.split('video=')[1].split('&')[0];
-        }
-
-        loadAndPlayVideo(videoUrl);
-      } else if (qrData.includes('github.com/hycentude89-tech/ar-video-me')) {
-        // Load the default video from the repository
-        loadAndPlayVideo('./video.mp4');
-      } else {
-        showError('QR code does not contain a valid video link.');
+    function scanLoop() {
+      if (!scanning || video.readyState < 2) {
+        requestAnimationFrame(scanLoop);
+        return;
       }
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+      if (code && code.data && code.data !== lastCode) {
+        lastCode = code.data;
+        handleCode(code.data);
+      }
+
+      requestAnimationFrame(scanLoop);
     }
 
-    // Load and play video
-    function loadAndPlayVideo(videoUrl) {
-      isScanning = false;
-      videoContainer.classList.add('active');
-      scannedVideo.src = videoUrl;
-      hintText.textContent = '✓ QR Code scanned! Video loaded.';
-      
-      scannedVideo.addEventListener('loadedmetadata', () => {
-        scannedVideo.play().catch(err => {
-          console.log('Auto-play prevented:', err);
-        });
-      });
-
-      scannedVideo.addEventListener('error', () => {
-        showError('Failed to load video. Please check the URL in the QR code.');
-        closeScanner();
-      });
-    }
-
-    // Play button handler
     playBtn.addEventListener('click', async () => {
       try {
-        await scannedVideo.play();
-      } catch (err) {
-        console.log('Play error:', err);
-        showError('Could not start playback. Tap the video player controls to play.');
+        await playback.play();
+      } catch (e) {
+        showMessage('Tap the video player to begin playback.', 2500);
       }
     });
 
-    // Close button handler
     closeBtn.addEventListener('click', () => {
-      closeScanner();
+      scanning = true;
+      lastCode = null;
+      playback.pause();
+      playback.currentTime = 0;
+      playback.src = '';
+      videoPanel.classList.remove('active');
+      showMessage('Scanner ready again.', 1800);
     });
 
-    // Close scanner
-    function closeScanner() {
-      isScanning = true;
-      scannedVideo.pause();
-      scannedVideo.currentTime = 0;
-      scannedVideo.src = '';
-      videoContainer.classList.remove('active');
-      lastScannedCode = null;
-      hintText.textContent = '📷 Point camera at QR code to scan';
-      scanQRCode();
-    }
-
-    // Show error message
-    function showError(message) {
-      errorMsg.textContent = message;
-      errorMsg.style.display = 'block';
-      setTimeout(() => {
-        errorMsg.style.display = 'none';
-      }, 5000);
-    }
-
-    // Start the app
     startCamera();
   </script>
 </body>

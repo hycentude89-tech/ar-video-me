@@ -3,213 +3,173 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Ronaldo AR Video</title>
-
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-
+  <title>AR Video Hub</title>
   <style>
-    html,body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; }
-    #loading {
-      position:fixed; inset:0; z-index:9999;
-      display:flex; align-items:center; justify-content:center;
-      color:#fff; background:#000; font:16px Arial,sans-serif;
-      text-align:center; padding:24px; box-sizing:border-box;
+    :root {
+      --bg: #06130d;
+      --panel: rgba(14, 29, 22, 0.9);
+      --accent: #3cff9a;
+      --accent2: #76ffd1;
+      --text: #eafef7;
+      --muted: #b5d9c5;
+      --danger: #ff6b6b;
     }
-    #hint {
-      position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
-      z-index:9998; color:#fff; background:rgba(0,0,0,.65);
-      padding:10px 14px; border-radius:10px; font:14px Arial,sans-serif;
-      text-align:center; max-width:90%;
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: linear-gradient(135deg, #020a07, #0b2019 35%, #020a07);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
     }
-    video { display:none; }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .wrap {
+      width: min(900px, 100%);
+      background: var(--panel);
+      border: 1px solid rgba(60, 255, 154, 0.3);
+      border-radius: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      padding: 30px 24px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      text-align: center;
+    }
+    p {
+      margin: 0 0 24px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.6;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .card {
+      display: block;
+      padding: 20px 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(118,255,209,0.25);
+      text-decoration: none;
+      color: var(--text);
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent2);
+      box-shadow: 0 10px 30px rgba(60,255,154,0.12);
+    }
+    .tag {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(60,255,154,0.12);
+      color: var(--accent2);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+    }
+    .small {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 24px;
+    }
+    button, .button-link {
+      background: var(--accent);
+      color: #02130e;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 0.96rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .button-link.secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .notice {
+      margin-top: 18px;
+      text-align: center;
+      color: var(--accent2);
+      font-weight: 700;
+    }
   </style>
 </head>
-
 <body>
-  <div id="loading">Starting camera…<br><small>Allow camera permission when asked.</small></div>
-  <div id="hint">Point the camera at the Ronaldo picture</div>
+  <div class="wrap">
+    <h1>AR Video Hub</h1>
+    <p>Scan a QR code, open the camera, or start the video directly. This page links to all of the versions you asked for.</p>
 
-  <a-scene
-    embedded
-    vr-mode-ui="enabled: false"
-    renderer="antialias: true; alpha: true; precision: mediump;"
-    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
+    <div class="grid">
+      <a class="card" href="qr-scanner.html">
+        <span class="tag">Camera</span>
+        <h2>QR Scanner</h2>
+        <div class="small">Open the camera, scan the QR code, and play the matching video.</div>
+      </a>
 
-    <a-assets timeout="15000">
-      <video
-        id="arVideo"
-        src="./c3f3ac01c4dc092612c9b62d5c65b899.mp4"
-        preload="auto"
-        playsinline
-        webkit-playsinline
-        crossorigin="anonymous">
-      </video>
-    </a-assets>
+      <a class="card" href="qr-image.html">
+        <span class="tag">Image</span>
+        <h2>Scan QR Image</h2>
+        <div class="small">Decode the QR code from the repo image file and show the linked video.</div>
+      </a>
 
-    <a-marker
-      type="pattern"
-      url="./marker.patt"
-      emitevents="true"
-      smooth="true"
-      smoothCount="5"
-      smoothTolerance=".01"
-      smoothThreshold="5">
+      <a class="card" href="video-player.html">
+        <span class="tag">Video</span>
+        <h2>Play Video</h2>
+        <div class="small">Jump straight to the video player with controls and playback buttons.</div>
+      </a>
 
-      <a-video
-        id="videoPlane"
-        src="#arVideo"
-        width="1.6"
-        height="0.9"
-        position="0 0.05 0"
-        rotation="-90 0 0"
-        material="shader: flat; side: double;">
-      </a-video>
-    </a-marker>
+      <a class="card" href="ar-viewer.html">
+        <span class="tag">AR</span>
+        <h2>AR Viewer</h2>
+        <div class="small">Full-screen mobile-friendly viewer that scans QR codes and presents video overlays.</div>
+      </a>
+    </div>
 
-    <a-entity camera></a-entity>
-  </a-scene>
+    <div class="actions">
+      <a class="button-link" href="qr-scanner.html">Open Scanner Now</a>
+      <a class="button-link secondary" href="video-player.html">Open Video Player</a>
+    </div>
 
-  <script>
-    const video = document.getElementById('arVideo');
-    const marker = document.querySelector('a-marker');
-    const loading = document.getElementById('loading');
-
-    function hideLoading() {
-      setTimeout(() => loading.style.display = 'none', 800);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const scene = document.querySelector('a-scene');
-
-      scene.addEventListener('loaded', hideLoading);
-
-      marker.addEventListener('markerFound', async () => {
-        try {
-          video.muted = true;
-          video.setAttribute('muted', '');
-          video.setAttribute('playsinline', '');
-          await video.play();
-        } catch (e) {
-          console.log('Video play:', e);
-        }
-      });
-
-      marker.addEventListener('markerLost', () => {
-        video.pause();
-        video.currentTime = 0;
-      });
-
-      // A user gesture helps mobile browsers unlock video playback.
-      document.body.addEventListener('touchstart', async () => {
-        try {
-          video.muted = true;
-          await video.play();
-          video.pause();
-          video.currentTime = 0;
-        } catch (e) {}
-      }, { once: true });
-    });
-  </script>
-</body>
-</html><!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#000000">
-<title>Ronaldo Video</title>
-<style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;min-height:100%;background:#000;color:#fff;font-family:Arial,sans-serif}
-body{display:flex;align-items:center;justify-content:center;padding:14px}
-.wrap{width:min(900px,100%);text-align:center}
-h1{margin:4px 0 8px;font-size:clamp(24px,7vw,42px)}
-p{margin:0 0 14px;opacity:.8}
-.player{position:relative;width:100%;background:#111;border-radius:14px;overflow:hidden}
-video{display:block;width:100%;height:auto;max-height:75vh;background:#111}
-#message{padding:16px;font-size:15px}
-button{margin:14px 6px 0;padding:13px 22px;border:0;border-radius:999px;font-size:16px;font-weight:700;cursor:pointer}
-#retry{display:none}
-.small{margin-top:12px;font-size:12px;opacity:.65}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>Ronaldo Video</h1>
-  <p>Tap Play to start the video.</p>
-
-  <div class="player">
-    <video id="video"
-      controls
-      playsinline
-      webkit-playsinline
-      preload="auto"
-      controlslist="nodownload">
-      <source src="https://raw.githubusercontent.com/hycentude89-tech/ar-video-/refs/heads/main/c3f3ac01c4dc092612c9b62d5c65b899.mp4" type="video/mp4">
-    </video>
-    <div id="message">Loading video…</div>
+    <div class="notice" id="autoText">Auto-redirect is off by default.</div>
   </div>
 
-  <button id="play">▶ Play Video</button>
-  <button id="retry">↻ Reload Video</button>
-  <div class="small">If playback stops, tap Reload Video and then Play.</div>
-</div>
-
-<script>
-const video = document.getElementById('video');
-const message = document.getElementById('message');
-const play = document.getElementById('play');
-const retry = document.getElementById('retry');
-
-function setMessage(t){ message.textContent=t; }
-
-play.addEventListener('click', async () => {
-  try {
-    await video.play();
-    setMessage('Playing…');
-  } catch(e) {
-    setMessage('Tap the video play button to start.');
-  }
-});
-
-retry.addEventListener('click', () => {
-  retry.style.display='none';
-  setMessage('Reloading video…');
-  video.pause();
-  video.currentTime=0;
-  video.load();
-});
-
-video.addEventListener('loadedmetadata', () => {
-  setMessage('Ready — tap Play.');
-});
-
-video.addEventListener('canplay', () => {
-  setMessage('Ready — tap Play.');
-});
-
-video.addEventListener('playing', () => {
-  setMessage('Playing…');
-});
-
-video.addEventListener('waiting', () => {
-  setMessage('Buffering… please wait.');
-});
-
-video.addEventListener('stalled', () => {
-  setMessage('Video connection stalled. Tap Reload Video.');
-  retry.style.display='inline-block';
-});
-
-video.addEventListener('error', () => {
-  setMessage('The video could not be loaded. Tap Reload Video.');
-  retry.style.display='inline-block';
-});
-
-window.addEventListener('load', () => {
-  video.load();
-});
-</script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('auto') === '1') {
+      document.getElementById('autoText').textContent = 'Opening QR scanner automatically...';
+      setTimeout(() => {
+        window.location.href = 'qr-scanner.html';
+      }, 1200);
+    }
+  </script>
 </body>
 </html>
