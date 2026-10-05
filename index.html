@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AR Video</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#000;font-family:Arial,sans-serif;color:#fff}
+body{display:flex;align-items:center;justify-content:center;padding:18px}
+main{width:min(900px,100%);text-align:center}
+h1{font-size:clamp(24px,6vw,42px);margin:0 0 8px}
+p{opacity:.85;margin:0 0 18px}
+video{width:100%;max-height:75vh;border-radius:14px;background:#111;display:block}
+button{margin-top:16px;padding:13px 22px;border:0;border-radius:999px;font-size:16px;font-weight:bold;cursor:pointer}
+#status{margin-top:12px;font-size:14px;opacity:.8}
+</style>
+</head>
+<body>
+<main>
+<h1>Ronaldo Video</h1>
+<p>Tap play if your browser blocks automatic playback.</p>
+<video id="video" controls playsinline webkit-playsinline preload="metadata" muted>
+<source src="https://raw.githubusercontent.com/hycentude89-tech/ar-video-/refs/heads/main/c3f3ac01c4dc092612c9b62d5c65b899.mp4" type="video/mp4">
+Your browser does not support video.
+</video>
+<button id="play">▶ Play Video</button>
+<div id="status">Loading video…</div>
+</main>
+<script>
+const v=document.getElementById('video');
+const b=document.getElementById('play');
+const s=document.getElementById('status');
+async function playVideo(){
+  try{v.muted=true; await v.play(); s.textContent='Playing';}
+  catch(e){s.textContent='Tap Play to start the video';}
+}
+b.addEventListener('click',playVideo);
+v.addEventListener('loadeddata',()=>{s.textContent='Ready'; playVideo();});
+v.addEventListener('play',()=>s.textContent='Playing');
+v.addEventListener('pause',()=>s.textContent='Paused');
+</script>
+</body>
+</html>
