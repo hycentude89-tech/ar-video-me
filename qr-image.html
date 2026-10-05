@@ -2,158 +2,143 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>QR Image Scanner</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>QR Image Video Loader</title>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <style>
     * { box-sizing: border-box; }
-    html, body {
+    body {
       margin: 0;
-      min-height: 100%;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
       background: #050d0c;
-      color: #fff;
+      color: white;
       font-family: Arial, sans-serif;
     }
-    body { display: flex; align-items: center; justify-content: center; padding: 24px; }
     .wrap {
-      width: min(900px, 100%);
-      background: rgba(12, 25, 22, 0.9);
-      border: 1px solid rgba(71,255,159,0.3);
+      width: min(900px, 90vw);
+      background: rgba(14, 25, 22, 0.9);
+      border: 1px solid rgba(71,255,159,0.25);
       border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      padding: 24px;
     }
-    .header {
-      padding: 20px 24px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.02);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
+    img {
+      display: block;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto 18px;
+      background: #000;
+      border-radius: 14px;
     }
-    h1 { margin: 0; font-size: clamp(1.6rem, 4vw, 2.2rem); }
-    .nav { display: flex; gap: 12px; flex-wrap: wrap; }
-    .nav a, button {
-      text-decoration: none;
-      border: 1px solid rgba(255,255,255,0.15);
+    .status {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: #dfeee6;
+    }
+    .data {
+      word-break: break-all;
+      color: #47ff9f;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+    video {
+      width: 100%;
+      display: block;
+      border-radius: 12px;
+      background: #000;
+    }
+    button {
+      margin-top: 12px;
+      border: 0;
       border-radius: 10px;
-      background: transparent;
-      color: #fff;
-      padding: 10px 14px;
+      background: #47ff9f;
+      color: #02170d;
+      padding: 12px 18px;
       font-weight: 700;
       cursor: pointer;
     }
-    .content { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; padding: 24px; }
-    .panel { background: rgba(255,255,255,0.02); border: 1px solid rgba(71,255,159,0.18); border-radius: 18px; padding: 18px; }
-    .img-wrap { width: 100%; aspect-ratio: 1; background: #000; border-radius: 14px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    .img-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; background: #030a07; }
-    .result { min-height: 130px; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
-    .status { font-size: 0.95rem; color: #cfe9dc; line-height: 1.6; }
-    .value { word-break: break-all; color: #47ff9f; font-weight: 700; }
-    .video-box { margin-top: 16px; display: none; }
-    .video-box.active { display: block; }
-    video { width: 100%; background: #000; border-radius: 12px; display: block; }
-    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
-    .primary { background: #47ff9f !important; color: #04170d !important; border-color: transparent !important; }
-    @media (max-width: 700px) { .content { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="header">
-      <h1>Scan QR Image</h1>
-      <div class="nav">
-        <a href="index.html">Home</a>
-        <a href="qr-scanner.html">Camera Scanner</a>
-        <a href="video-player.html">Video Player</a>
-      </div>
-    </div>
+    <img id="qrImage" src="QR-code.png" alt="QR code">
 
-    <div class="content">
-      <div class="panel img-wrap">
-        <img id="qrImage" src="QR-code.png" alt="QR code image">
-      </div>
+    <div id="status" class="status">Scanning QR image...</div>
+    <div id="data" class="data">Waiting...</div>
 
-      <div class="panel result">
-        <div class="status" id="status">Scanning QR image...</div>
-        <div class="value" id="value">Waiting for QR content...</div>
-
-        <div id="videoBox" class="video-box">
-          <video id="video" controls playsinline webkit-playsinline preload="auto" autoplay></video>
-          <div class="actions">
-            <button class="primary" id="playBtn">Play Video</button>
-            <button id="openScannerBtn">Open Scanner</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <video id="video" controls playsinline preload="auto"></video>
+    <button id="playBtn">Play Video</button>
   </div>
 
   <script>
-    const qrImage = document.getElementById('qrImage');
-    const status = document.getElementById('status');
-    const value = document.getElementById('value');
-    const videoBox = document.getElementById('videoBox');
-    const video = document.getElementById('video');
-    const playBtn = document.getElementById('playBtn');
-    const openScannerBtn = document.getElementById('openScannerBtn');
+    const repoUrl = "https://github.com/hycentude89-tech/ar-video-me";
+    const videoUrl = "https://raw.githubusercontent.com/hycentude89-tech/ar-video-me/main/video.mp4";
 
-    const directVideoUrl = 'https://raw.githubusercontent.com/hycentude89-tech/ar-video-me/main/video.mp4';
+    function resolveScanTarget(raw) {
+      const value = String(raw || "").trim();
+      if (!value) return null;
 
-    function parseVideoUrl(raw) {
-      const text = String(raw || '').trim();
-      if (!text) return null;
-      const normalized = text.toLowerCase();
-      if (normalized.includes('raw.githubusercontent.com/hycentude89-tech/ar-video-me/main/video.mp4')) return directVideoUrl;
-      if (normalized.includes('github.com/hycentude89-tech/ar-video-') || normalized.includes('github.com/hycentude89-tech/ar-video-me')) return directVideoUrl;
-      if (normalized.includes('video=')) return decodeURIComponent(text.split('video=')[1].split('&')[0]);
-      if (/(?:\.mp4|\.webm|\.mov)(?:\?|$)/i.test(text)) return text;
-      if (normalized.includes('github.com') || normalized.includes('raw.githubusercontent')) return directVideoUrl;
+      if (value === repoUrl || value.includes("github.com/hycentude89-tech/ar-video-me")) {
+        return videoUrl;
+      }
+
+      if (value.includes("raw.githubusercontent.com/hycentude89-tech/ar-video-me/main/video.mp4")) {
+        return value;
+      }
+
+      if (/(?:\.mp4|\.webm|\.mov)(?:\?|$)/i.test(value)) {
+        return value;
+      }
+
       return null;
     }
 
-    function handleDecoded(data) {
-      const url = parseVideoUrl(data);
-      value.textContent = data;
-      status.textContent = url ? 'QR code decoded successfully.' : 'QR code decoded, but no usable link was found.';
-      if (url) {
-        video.src = url;
-        videoBox.classList.add('active');
-        video.load();
-        video.play().catch(() => {});
-      }
-    }
-
     function decodeImage() {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
       const img = new Image();
       img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
         canvas.width = img.width;
         canvas.height = img.height;
         ctx.drawImage(img, 0, 0);
+
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height);
-        if (code && code.data) {
-          handleDecoded(code.data);
-        } else {
-          status.textContent = 'No QR code was detected in the image.';
-          value.textContent = 'Please try the camera scanner or use a clearer QR image.';
+
+        if (!code || !code.data) {
+          document.getElementById('status').textContent = 'No QR code detected.';
+          document.getElementById('data').textContent = 'Please use a clearer QR image.';
+          return;
         }
+
+        const target = resolveScanTarget(code.data);
+        document.getElementById('data').textContent = code.data;
+
+        if (!target) {
+          document.getElementById('status').textContent = 'QR found, but it is not a supported video link.';
+          return;
+        }
+
+        document.getElementById('status').textContent = 'QR code decoded successfully.';
+        const video = document.getElementById('video');
+        video.src = target;
+        video.load();
+        video.play().catch(() => {});
       };
+
       img.onerror = () => {
-        status.textContent = 'The QR image could not be loaded.';
-        value.textContent = 'Check that QR-code.png exists in the repository root.';
+        document.getElementById('status').textContent = 'Image failed to load.';
       };
-      img.src = qrImage.src;
+
+      img.src = 'QR-code.png';
     }
 
-    playBtn.addEventListener('click', async () => {
-      try { await video.play(); } catch (e) { status.textContent = 'Tap the video controls to start playback.'; }
+    document.getElementById('playBtn').addEventListener('click', async () => {
+      const video = document.getElementById('video');
+      try { await video.play(); } catch (e) {}
     });
-    openScannerBtn.addEventListener('click', () => { window.location.href = 'qr-scanner.html'; });
+
     decodeImage();
   </script>
 </body>
