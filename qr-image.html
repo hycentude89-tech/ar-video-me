@@ -14,12 +14,7 @@
       color: #fff;
       font-family: Arial, sans-serif;
     }
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
+    body { display: flex; align-items: center; justify-content: center; padding: 24px; }
     .wrap {
       width: min(900px, 100%);
       background: rgba(12, 25, 22, 0.9);
@@ -39,13 +34,8 @@
       flex-wrap: wrap;
     }
     h1 { margin: 0; font-size: clamp(1.6rem, 4vw, 2.2rem); }
-    .nav {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .nav a,
-    button {
+    .nav { display: flex; gap: 12px; flex-wrap: wrap; }
+    .nav a, button {
       text-decoration: none;
       border: 1px solid rgba(255,255,255,0.15);
       border-radius: 10px;
@@ -55,74 +45,18 @@
       font-weight: 700;
       cursor: pointer;
     }
-    .content {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 24px;
-      padding: 24px;
-    }
-    .panel {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(71,255,159,0.18);
-      border-radius: 18px;
-      padding: 18px;
-    }
-    .img-wrap {
-      width: 100%;
-      aspect-ratio: 1;
-      background: #000;
-      border-radius: 14px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .img-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-      background: #030a07;
-    }
-    .result {
-      min-height: 130px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 12px;
-    }
-    .status {
-      font-size: 0.95rem;
-      color: #cfe9dc;
-      line-height: 1.6;
-    }
-    .value {
-      word-break: break-all;
-      color: #47ff9f;
-      font-weight: 700;
-    }
-    .video-box {
-      margin-top: 16px;
-      display: none;
-    }
+    .content { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; padding: 24px; }
+    .panel { background: rgba(255,255,255,0.02); border: 1px solid rgba(71,255,159,0.18); border-radius: 18px; padding: 18px; }
+    .img-wrap { width: 100%; aspect-ratio: 1; background: #000; border-radius: 14px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .img-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; background: #030a07; }
+    .result { min-height: 130px; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+    .status { font-size: 0.95rem; color: #cfe9dc; line-height: 1.6; }
+    .value { word-break: break-all; color: #47ff9f; font-weight: 700; }
+    .video-box { margin-top: 16px; display: none; }
     .video-box.active { display: block; }
-    video {
-      width: 100%;
-      background: #000;
-      border-radius: 12px;
-      display: block;
-    }
-    .actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 12px;
-    }
-    .primary {
-      background: #47ff9f !important;
-      color: #04170d !important;
-      border-color: transparent !important;
-    }
+    video { width: 100%; background: #000; border-radius: 12px; display: block; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+    .primary { background: #47ff9f !important; color: #04170d !important; border-color: transparent !important; }
     @media (max-width: 700px) { .content { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -147,7 +81,7 @@
         <div class="value" id="value">Waiting for QR content...</div>
 
         <div id="videoBox" class="video-box">
-          <video id="video" controls playsinline webkit-playsinline></video>
+          <video id="video" controls playsinline webkit-playsinline preload="auto" autoplay></video>
           <div class="actions">
             <button class="primary" id="playBtn">Play Video</button>
             <button id="openScannerBtn">Open Scanner</button>
@@ -165,25 +99,30 @@
     const video = document.getElementById('video');
     const playBtn = document.getElementById('playBtn');
     const openScannerBtn = document.getElementById('openScannerBtn');
-    const videoSource = './video.mp4';
+
+    const directVideoUrl = 'https://raw.githubusercontent.com/hycentude89-tech/ar-video-me/main/video.mp4';
 
     function parseVideoUrl(raw) {
       const text = String(raw || '').trim();
       if (!text) return null;
-      if (text.includes('video=')) return decodeURIComponent(text.split('video=')[1].split('&')[0]);
+      const normalized = text.toLowerCase();
+      if (normalized.includes('raw.githubusercontent.com/hycentude89-tech/ar-video-me/main/video.mp4')) return directVideoUrl;
+      if (normalized.includes('github.com/hycentude89-tech/ar-video-') || normalized.includes('github.com/hycentude89-tech/ar-video-me')) return directVideoUrl;
+      if (normalized.includes('video=')) return decodeURIComponent(text.split('video=')[1].split('&')[0]);
       if (/(?:\.mp4|\.webm|\.mov)(?:\?|$)/i.test(text)) return text;
-      if (text.includes('github.com') || text.includes('raw.githubusercontent')) return videoSource;
+      if (normalized.includes('github.com') || normalized.includes('raw.githubusercontent')) return directVideoUrl;
       return null;
     }
 
     function handleDecoded(data) {
       const url = parseVideoUrl(data);
       value.textContent = data;
-      status.textContent = url ? 'QR code decoded successfully.' : 'QR code decoded, but no usable video link was found.';
+      status.textContent = url ? 'QR code decoded successfully.' : 'QR code decoded, but no usable link was found.';
       if (url) {
         video.src = url;
         videoBox.classList.add('active');
         video.load();
+        video.play().catch(() => {});
       }
     }
 
@@ -191,14 +130,12 @@
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
-
       img.onload = () => {
         canvas.width = img.width;
         canvas.height = img.height;
         ctx.drawImage(img, 0, 0);
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height);
-
         if (code && code.data) {
           handleDecoded(code.data);
         } else {
@@ -206,19 +143,16 @@
           value.textContent = 'Please try the camera scanner or use a clearer QR image.';
         }
       };
-
       img.onerror = () => {
         status.textContent = 'The QR image could not be loaded.';
         value.textContent = 'Check that QR-code.png exists in the repository root.';
       };
-
       img.src = qrImage.src;
     }
 
     playBtn.addEventListener('click', async () => {
       try { await video.play(); } catch (e) { status.textContent = 'Tap the video controls to start playback.'; }
     });
-
     openScannerBtn.addEventListener('click', () => { window.location.href = 'qr-scanner.html'; });
     decodeImage();
   </script>
