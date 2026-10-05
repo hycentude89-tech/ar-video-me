@@ -1,6 +1,120 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ronaldo AR Video</title>
+
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+  <style>
+    html,body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#000; }
+    #loading {
+      position:fixed; inset:0; z-index:9999;
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; background:#000; font:16px Arial,sans-serif;
+      text-align:center; padding:24px; box-sizing:border-box;
+    }
+    #hint {
+      position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
+      z-index:9998; color:#fff; background:rgba(0,0,0,.65);
+      padding:10px 14px; border-radius:10px; font:14px Arial,sans-serif;
+      text-align:center; max-width:90%;
+    }
+    video { display:none; }
+  </style>
+</head>
+
+<body>
+  <div id="loading">Starting camera…<br><small>Allow camera permission when asked.</small></div>
+  <div id="hint">Point the camera at the Ronaldo picture</div>
+
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    renderer="antialias: true; alpha: true; precision: mediump;"
+    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
+
+    <a-assets timeout="15000">
+      <video
+        id="arVideo"
+        src="./c3f3ac01c4dc092612c9b62d5c65b899.mp4"
+        preload="auto"
+        playsinline
+        webkit-playsinline
+        crossorigin="anonymous">
+      </video>
+    </a-assets>
+
+    <a-marker
+      type="pattern"
+      url="./marker.patt"
+      emitevents="true"
+      smooth="true"
+      smoothCount="5"
+      smoothTolerance=".01"
+      smoothThreshold="5">
+
+      <a-video
+        id="videoPlane"
+        src="#arVideo"
+        width="1.6"
+        height="0.9"
+        position="0 0.05 0"
+        rotation="-90 0 0"
+        material="shader: flat; side: double;">
+      </a-video>
+    </a-marker>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    const video = document.getElementById('arVideo');
+    const marker = document.querySelector('a-marker');
+    const loading = document.getElementById('loading');
+
+    function hideLoading() {
+      setTimeout(() => loading.style.display = 'none', 800);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const scene = document.querySelector('a-scene');
+
+      scene.addEventListener('loaded', hideLoading);
+
+      marker.addEventListener('markerFound', async () => {
+        try {
+          video.muted = true;
+          video.setAttribute('muted', '');
+          video.setAttribute('playsinline', '');
+          await video.play();
+        } catch (e) {
+          console.log('Video play:', e);
+        }
+      });
+
+      marker.addEventListener('markerLost', () => {
+        video.pause();
+        video.currentTime = 0;
+      });
+
+      // A user gesture helps mobile browsers unlock video playback.
+      document.body.addEventListener('touchstart', async () => {
+        try {
+          video.muted = true;
+          await video.play();
+          video.pause();
+          video.currentTime = 0;
+        } catch (e) {}
+      }, { once: true });
+    });
+  </script>
+</body>
+</html><!doctype html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
