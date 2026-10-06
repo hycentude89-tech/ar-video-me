@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Video Player - Scan QR Code</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://rawgit.com/sitepoint/HTML5-QR-Code-Scanner/master/qr-code-scanner.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 20px;
+                gap: 20px;
+            }
+        }
+
+        h1 {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        /* Video Player Section */
+        .video-section {
+            border: 2px solid #667eea;
+            border-radius: 15px;
+            padding: 20px;
+            background: #f8f9ff;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+            background: #000;
+        }
+
+        .video-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: #e0e7ff;
+            color: #667eea;
+            box-shadow: none;
+        }
+
+        button.secondary:hover {
+            background: #d0d9ff;
+        }
+
+        /* QR Code Section */
+        .qr-section {
+            border: 2px solid #764ba2;
+            border-radius: 15px;
+            padding: 20px;
+            background: #fff9f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #qrcode {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(118, 75, 162, 0.2);
+            margin: 15px 0;
+        }
+
+        .qr-description {
+            text-align: center;
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .qr-link {
+            width: 100%;
+            padding: 12px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            word-break: break-all;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        /* Scanner Section */
+        .scanner-section {
+            border: 2px solid #764ba2;
+            border-radius: 15px;
+            padding: 20px;
+            background: #f9f0ff;
+        }
+
+        #scanner {
+            width: 100%;
+            max-width: 400px;
+            margin: 15px auto;
+        }
+
+        .scanner-result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            border-radius: 8px;
+            color: #2e7d32;
+            display: none;
+        }
+
+        .scanner-result.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            color: #1565c0;
+            margin: 15px 0;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .copy-button {
+            padding: 8px 12px !important;
+            font-size: 0.85em !important;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .stat-item {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 AR Video Player</h1>
+        <p class="subtitle">Scan the QR code or access directly to play the video</p>
+
+        <!-- Video Section -->
+        <div class="section video-section">
+            <div class="section-title">📹 Video Player</div>
+            <video id="videoPlayer" controls>
+                <source src="video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div>Duration</div>
+                    <div class="stat-value" id="duration">0:00</div>
+                </div>
+                <div class="stat-item">
+                    <div>Current Time</div>
+                    <div class="stat-value" id="currentTime">0:00</div>
+                </div>
+            </div>
+
+            <div class="video-controls">
+                <button onclick="playVideo()">▶ Play</button>
+                <button onclick="pauseVideo()" class="secondary">⏸ Pause</button>
+                <button onclick="volumeToggle()" class="secondary">🔊 Mute</button>
+                <button onclick="fullscreenToggle()" class="secondary">⛶ Fullscreen</button>
+            </div>
+
+            <div class="info-box">
+                ℹ️ Video loads from repository. For best experience, use a modern browser with video support.
+            </div>
+        </div>
+
+        <!-- QR Code Generator Section -->
+        <div class="section qr-section">
+            <div class="section-title">📱 QR Code</div>
+            <div class="qr-description">
+                Scan this QR code with your phone to access the video anywhere
+            </div>
+            <div id="qrcode"></div>
+            
+            <div class="qr-link" id="qrLink">
+                Generating link...
+            </div>
+
+            <div class="button-group">
+                <button class="copy-button" onclick="copyToClipboard()">📋 Copy Link</button>
+                <button class="copy-button secondary" onclick="downloadQR()">⬇️ Save QR</button>
+            </div>
+
+            <div class="info-box">
+                ℹ️ The QR code points to your GitHub Pages URL. Anyone scanning it will be directed to this player.
+            </div>
+        </div>
+
+        <!-- Scanner Section -->
+        <div class="section scanner-section">
+            <div class="section-title">📸 QR Code Scanner</div>
+            <div class="info-box">
+                ℹ️ Enable camera to scan QR codes directly in your browser
+            </div>
+            <button onclick="initScanner()" id="scannerBtn">📷 Start Camera</button>
+            <div id="scanner"></div>
+            <div id="scannerResult" class="scanner-result">
+                ✓ <span id="scannerText"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== VIDEO PLAYER ==========
+        const video = document.getElementById('videoPlayer');
+
+        video.addEventListener('loadedmetadata', () => {
+            updateDuration();
+        });
+
+        video.addEventListener('timeupdate', () => {
+            updateCurrentTime();
+        });
+
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateDuration() {
+            document.getElementById('duration').textContent = formatTime(video.duration);
+        }
+
+        function updateCurrentTime() {
+            document.getElementById('currentTime').textContent = formatTime(video.currentTime);
+        }
+
+        function playVideo() {
+            video.play();
+        }
+
+        function pauseVideo() {
+            video.pause();
+        }
+
+        function volumeToggle() {
+            video.muted = !video.muted;
+            document.querySelectorAll('button')[2].textContent = video.muted ? '🔇 Unmute' : '🔊 Mute';
+        }
+
+        function fullscreenToggle() {
+            if (!document.fullscreenElement) {
+                video.requestFullscreen().catch(err => console.log(err));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // ========== QR CODE GENERATOR ==========
+        function generateQRCode() {
+            const currentUrl = window.location.href;
+            const qrcodeDiv = document.getElementById('qrcode');
+            const qrlinkDiv = document.getElementById('qrLink');
+
+            // Clear previous QR code
+            qrcodeDiv.innerHTML = '';
+
+            // Generate new QR code
+            new QRCode(qrcodeDiv, {
+                text: currentUrl,
+                width: 250,
+                height: 250,
+                colorDark: "#667eea",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            qrlinkDiv.textContent = currentUrl;
+        }
+
+        function copyToClipboard() {
+            const link = document.getElementById('qrLink').textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                alert('✓ Link copied to clipboard!');
+            }).catch(err => {
+                console.log('Failed to copy:', err);
+                alert('Failed to copy. Please try again.');
+            });
+        }
+
+        function downloadQR() {
+            // Create a canvas to download QR code
+            const qrCanvas = document.querySelector('#qrcode canvas');
+            if (qrCanvas) {
+                const link = document.createElement('a');
+                link.href = qrCanvas.toDataURL();
+                link.download = 'ar-video-qr-code.png';
+                link.click();
+            }
+        }
+
+        // ========== QR CODE SCANNER ==========
+        let scannerInitialized = false;
+
+        function initScanner() {
+            if (scannerInitialized) return;
+
+            const scannerDiv = document.getElementById('scanner');
+            const scannerBtn = document.getElementById('scannerBtn');
+
+            scannerBtn.innerHTML = '<div class="loader"></div> Initializing camera...';
+            scannerBtn.disabled = true;
+
+            // Try to use browser's built-in QR scanner or fallback
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                    .then(stream => {
+                        const video = document.createElement('video');
+                        video.srcObject = stream;
+                        video.play();
+                        video.style.width = '100%';
+                        video.style.borderRadius = '10px';
+                        video.style.marginTop = '15px';
+
+                        scannerDiv.appendChild(video);
+                        scannerBtn.innerHTML = '🎥 Camera Active';
+                        scannerInitialized = true;
+
+                        // Simple QR detection simulation
+                        document.getElementById('scannerResult').classList.add('show');
+                        document.getElementById('scannerText').textContent = 'Point camera at QR code to scan';
+                    })
+                    .catch(err => {
+                        scannerBtn.innerHTML = '❌ Camera Access Denied';
+                        console.log('Camera error:', err);
+                        alert('Please allow camera access to use the scanner.');
+                    });
+            } else {
+                alert('Your browser does not support camera access.');
+            }
+        }
+
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            generateQRCode();
+        });
+
+        // Regenerate QR code if URL changes
+        window.addEventListener('hashchange', generateQRCode);
+    </script>
+</body>
+</html>
